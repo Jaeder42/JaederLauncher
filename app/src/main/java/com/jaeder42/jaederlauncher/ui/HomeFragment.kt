@@ -6,10 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.jaederlauncher.R
+import com.google.android.material.snackbar.Snackbar
 
 /**
  * An example full-screen fragment that shows and hides the system UI (i.e.
@@ -17,6 +17,7 @@ import com.example.jaederlauncher.R
  */
 class HomeFragment : Fragment() {
     private val hideHandler = Handler()
+    private lateinit var viewOfLayout: View
 
     @Suppress("InlinedApi")
     private val hidePart2Runnable = Runnable {
@@ -26,20 +27,18 @@ class HomeFragment : Fragment() {
         // and API 19 (KitKat). It is safe to use them, as they are inlined
         // at compile-time and do nothing on earlier devices.
         val flags =
-            View.SYSTEM_UI_FLAG_LOW_PROFILE or
-                    View.SYSTEM_UI_FLAG_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                View.SYSTEM_UI_FLAG_LOW_PROFILE or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
         activity?.window?.decorView?.systemUiVisibility = flags
         (activity as? AppCompatActivity)?.supportActionBar?.hide()
     }
     private val showPart2Runnable = Runnable {
         // Delayed display of UI elements
-        fullscreenContentControls?.visibility = View.VISIBLE
     }
-    private var visible: Boolean = false
     private val hideRunnable = Runnable { hide() }
 
     /**
@@ -54,24 +53,27 @@ class HomeFragment : Fragment() {
         false
     }
 
-    private var dummyButton: Button? = null
-    private var fullscreenContent: View? = null
-    private var fullscreenContentControls: View? = null
+    private var openShortcuts: View? = null
+    private var messageShortcut: View? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
+
+
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        visible = true
-
+        openShortcuts = view.findViewById(R.id.openShortcuts)
+        messageShortcut = view.findViewById(R.id.messageShortcut)
+        openShortcuts?.setOnClickListener { view ->
+            messageShortcut?.animate()?.translationY(-55f);
         }
+    }
 
     override fun onResume() {
         super.onResume()
@@ -94,23 +96,13 @@ class HomeFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        dummyButton = null
-        fullscreenContent = null
-        fullscreenContentControls = null
+        openShortcuts = null
+
     }
 
-    private fun toggle() {
-        if (visible) {
-            hide()
-        } else {
-            show()
-        }
-    }
 
     private fun hide() {
         // Hide UI first
-        fullscreenContentControls?.visibility = View.GONE
-        visible = false
 
         // Schedule a runnable to remove the status and navigation bar after a delay
         hideHandler.removeCallbacks(showPart2Runnable)
@@ -120,10 +112,7 @@ class HomeFragment : Fragment() {
     @Suppress("InlinedApi")
     private fun show() {
         // Show the system bar
-        fullscreenContent?.systemUiVisibility =
-            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-        visible = true
+
 
         // Schedule a runnable to display UI elements after a delay
         hideHandler.removeCallbacks(hidePart2Runnable)
